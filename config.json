@@ -1,0 +1,37 @@
+{
+  "server": {
+    "port": 3000,
+    "host": "localhost"
+  },
+  "ffmpegService": {
+    "url": "http://localhost:8787",
+    "apiKey": "72cd0ffdd03a7aedefb6c2c5f077323e522abf70cf8e01f5d29e0b271e6892dd"
+  },
+  "antigravity": {
+    "cliPath": "C:\\Users\\Admin\\.gemini\\bin\\agy.exe",
+    "promptExpansionEnabled": true,
+    "timeoutMs": 180000
+  },
+  "gdrive": {
+    "binPath": "C:\\Users\\Admin\\.gemini\\antigravity\\plugin_data\\gdrive\\bin\\gdrive-986250228.exe",
+    "scriptPath": "C:\\Users\\Admin\\.gemini\\config\\plugins\\gdrive\\skills\\gdrive\\scripts\\gdrive.cmd",
+    "youtubeN8nFolderId": "15y4Ettt3rjbhCb_dt8PVoVqRBB5WLtX1",
+    "defaultFolderId": "18eMDyEtFAzKcBXgmJw8ZW3jx31bcmE0D",
+    "defaultFolderName": "20261014-1247-the-new-friend-in-the-village",
+    "autoUpload": true
+  },
+  "generator": {
+    "provider": "playwright-gemini",
+    "profileDir": "D:\\workspace\\image-pipeline\\gemini_chrome_profile",
+    "defaultModel": "imagen-3",
+    "defaultAspectRatio": "9:16",
+    "width": 1080,
+    "height": 1920
+  },
+  "naming": {
+    "defaultPattern": "frame_{index:04d}.png",
+    "defaultScene": 1,
+    "defaultShot": 1,
+    "startIndex": 1
+  }
+}

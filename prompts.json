@@ -1,0 +1,17 @@
+[
+  {
+    "scene": 1,
+    "shot": 1,
+    "prompt": "Cinematic wide angle drone shot over futuristic Tokyo in 2088 under torrential rain, illuminated skyscrapers with magenta and cyan neon"
+  },
+  {
+    "scene": 1,
+    "shot": 2,
+    "prompt": "Low-angle medium tracking shot of cyberpunk detective in a black trenchcoat stepping into illuminated neon puddle on dark asphalt"
+  },
+  {
+    "scene": 1,
+    "shot": 3,
+    "prompt": "Extreme macro close-up of detective's synthetic bionic eye scanning encrypted data stream in dark alleyway"
+  }
+]

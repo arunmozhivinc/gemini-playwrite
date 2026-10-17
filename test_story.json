@@ -1,0 +1,51 @@
+{
+  "title_en": "The New Friend in the Village",
+  "title_ta": "கிராமத்தில் புதிய நண்பன்",
+  "theme": "Friendship and welcoming newcomers",
+  "moral_en": "Being kind to new friends makes everyone happy.",
+  "moral_ta": "புதிய நண்பர்களிடம் அன்பாக இருந்தால் எல்லோரும் மகிழ்ச்சியாக இருப்பார்கள்.",
+  "description_en": "Arjun moves to a new village and feels shy, but Kavya's kindness helps him make a new friend.",
+  "description_ta": "அர்ஜுன் புதிய கிராமத்திற்கு வந்து வெட்கப்படுகிறான், ஆனால் கவ்யாவின் அன்பு அவனுக்கு புதிய நண்பனை உருவாக்க உதவுகிறது.",
+  "tags": [
+    "friendship",
+    "kindness",
+    "village",
+    "children",
+    "inclusion"
+  ],
+  "character_sheet": "Arjun: 5-year-old boy, short black hair, wearing a yellow kurta and blue shorts. Kavya: 5-year-old girl, long black hair in two braids, wearing a pink dress with small white flowers.",
+  "scenes": [
+    {
+      "image_prompt": "A 5-year-old boy named Arjun with short black hair, wearing a yellow kurta and blue shorts, looking out of a window of a small house with a sad/shy expression, seeing a group of children playing outside in a sunny village street, soft 2D watercolor storybook style, bright warm colors, vertical 9:16 portrait composition, 1080x1920, no text.",
+      "text_en": "Arjun and his family moved to a new village. He looked out the window and saw children playing happily. Arjun felt shy and stayed inside.",
+      "text_ta": "அர்ஜுனும் அவனது குடும்பமும் புதிய கிராமத்திற்கு குடிவந்தனர். அவன் ஜன்னல் வழியாக வெளியே பார்த்தான், குழந்தைகள் மகிழ்ச்சியாக விளையாடுவதைக் கண்டான். அர்ஜுன் வெட்கப்பட்டு உள்ளேயே இருந்தான்."
+    },
+    {
+      "image_prompt": "A 5-year-old girl named Kavya with long black hair in two braids, wearing a pink dress with small white flowers, standing outside a house, smiling and waving at a 5-year-old boy named Arjun with short black hair, wearing a yellow kurta and blue shorts, who is at the window, shyly waving back, village background, soft 2D watercolor storybook style, bright warm colors, vertical 9:16 portrait, 1080x1920, no text.",
+      "text_en": "A little girl named Kavya saw Arjun at the window. She smiled and waved at him. Arjun shyly waved back.",
+      "text_ta": "கவ்யா என்ற சிறுமி ஜன்னலில் அர்ஜுனைப் பார்த்தாள். அவள் புன்னகைத்து அவனுக்கு கை அசைத்தாள். அர்ஜுன் வெட்கத்துடன் திரும்பி கை அசைத்தான்."
+    },
+    {
+      "image_prompt": "A 5-year-old girl named Kavya with long black hair in two braids, wearing a pink dress with small white flowers, holding a red ball, standing near the door of a house, inviting a 5-year-old boy named Arjun with short black hair, wearing a yellow kurta and blue shorts, who is smiling and stepping outside, village setting, soft 2D watercolor storybook style, bright warm colors, vertical 9:16 portrait, 1080x1920, no text.",
+      "text_en": "Kavya came closer with a red ball. She asked Arjun to come out and play. Arjun smiled and went outside.",
+      "text_ta": "கவ்யா ஒரு சிவப்பு பந்துடன் அருகில் வந்தாள். அவள் அர்ஜுனை வெளியே வந்து விளையாட அழைத்தாள். அர்ஜுன் புன்னகைத்து வெளியே சென்றான்."
+    },
+    {
+      "image_prompt": "A 5-year-old boy named Arjun with short black hair, wearing a yellow kurta and blue shorts, and a 5-year-old girl named Kavya with long black hair in two braids, wearing a pink dress with small white flowers, playing with a red ball in a sunny village yard, both laughing and running, soft 2D watercolor storybook style, bright warm colors, vertical 9:16 portrait, 1080x1920, no text.",
+      "text_en": "Arjun and Kavya played with the ball. They laughed and ran around. Arjun felt happy.",
+      "text_ta": "அர்ஜுனும் கவ்யாவும் பந்துடன் விளையாடினர். அவர்கள் சிரித்து ஓடினர். அர்ஜுன் மகிழ்ச்சியாக உணர்ந்தான்."
+    },
+    {
+      "image_prompt": "A 5-year-old boy named Arjun with short black hair, wearing a yellow kurta and blue shorts, and a 5-year-old girl named Kavya with long black hair in two braids, wearing a pink dress with small white flowers, sitting together on a bench under a tree, smiling and talking, village background, soft 2D watercolor storybook style, bright warm colors, vertical 9:16 portrait, 1080x1920, no text.",
+      "text_en": "Arjun and Kavya became best friends. They played together every day. Arjun was no longer shy.",
+      "text_ta": "அர்ஜுனும் கவ்யாவும் சிறந்த நண்பர்கள் ஆனார்கள். அவர்கள் ஒவ்வொரு நாளும் ஒன்றாக விளையாடினர். அர்ஜுன் இனி வெட்கப்படவில்லை."
+    },
+    {
+      "image_prompt": "A 5-year-old boy named Arjun with short black hair, wearing a yellow kurta and blue shorts, and a 5-year-old girl named Kavya with long black hair in two braids, wearing a pink dress with small white flowers, hugging each other warmly, both smiling, village background, soft 2D watercolor storybook style, bright warm colors, vertical 9:16 portrait, 1080x1920, no text.",
+      "text_en": "Arjun thanked Kavya for being kind. Kavya smiled and gave him a hug. They both felt warm and happy.",
+      "text_ta": "அர்ஜுன் கவ்யாவுக்கு அன்பாக இருந்ததற்காக நன்றி சொன்னான். கவ்யா புன்னகைத்து அவனைக் கட்டிப்பிடித்தாள். இருவரும் சூடாகவும் மகிழ்ச்சியாகவும் உணர்ந்தனர்."
+    }
+  ],
+  "story_id": "20261014-1247-the-new-friend-in-the-village",
+  "tags_csv": "friendship,kindness,village,children,inclusion"
+}

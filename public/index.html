@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Antigravity Kids Studio — AI Video Production & Publishing Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=5">
+</head>
+<body>
+  <!-- Ambient Background Glows -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <div class="app-container">
+    <!-- Top Dashboard Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-icon">🎬</div>
+        <div class="brand-text">
+          <h1>Antigravity Kids Studio</h1>
+          <p class="subtitle">AI YouTube Shorts Production & Publishing Dashboard</p>
+        </div>
+      </div>
+
+      <!-- Engine & Service Health Badges -->
+      <div class="header-status">
+        <div id="status-agy" class="status-badge" title="Local Antigravity AI Engine">
+          <span class="status-dot"></span>
+          <span class="status-label">Antigravity AI</span>
+        </div>
+        <div id="status-ffmpeg" class="status-badge" title="FFmpeg Subtitling Service (Port 8787)">
+          <span class="status-dot"></span>
+          <span class="status-label">FFmpeg 8787</span>
+        </div>
+        <div id="status-elevenlabs" class="status-badge" title="ElevenLabs Bilingual Narration">
+          <span class="status-dot" style="background:#c084fc;"></span>
+          <span class="status-label">ElevenLabs</span>
+        </div>
+        <div id="status-db" class="status-badge" title="PostgreSQL Database Connection">
+          <span class="status-dot" style="background:#38bdf8;"></span>
+          <span class="status-label">PostgreSQL</span>
+        </div>
+        <div id="status-yt" class="status-badge" title="YouTube Publishing Connection">
+          <span class="status-dot" style="background:#f87171;"></span>
+          <span class="status-label">YouTube Shorts</span>
+        </div>
+        <div style="display: flex; gap: 8px; margin-left: 8px;">
+          <button type="button" id="btn-toggle-db-modal" class="btn-sm btn-outline" style="font-size: 0.76rem;">
+            🗄️ PostgreSQL Records
+          </button>
+          <button type="button" id="btn-refresh-all" class="btn-sm btn-outline" title="Refresh Dashboard Data">
+            🔄
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- 1. Top KPI Summary Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon">📖</div>
+        <div class="kpi-details">
+          <span class="kpi-value" id="kpi-total-stories">4 Stories</span>
+          <span class="kpi-label">Generated Stories</span>
+          <span class="kpi-sub" id="kpi-latest-title">Latest: Little Anbu...</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">🎬</div>
+        <div class="kpi-details">
+          <span class="kpi-value" id="kpi-total-videos">4 Subtitled Shorts</span>
+          <span class="kpi-label">Final Rendered Videos</span>
+          <span class="kpi-sub" id="kpi-videos-detail">9:16 Vertical • EN & TA</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">📤</div>
+        <div class="kpi-details">
+          <span class="kpi-value" id="kpi-youtube-status">4 Ready</span>
+          <span class="kpi-label">YouTube Shorts Status</span>
+          <span class="kpi-sub" id="kpi-youtube-detail">0 Uploaded • 4 Awaiting Approval</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">⏰</div>
+        <div class="kpi-details">
+          <span class="kpi-value" id="kpi-schedule-label">Every 1 Hour</span>
+          <span class="kpi-label">Automation Frequency</span>
+          <span class="kpi-sub" id="kpi-schedule-next">Next run: In 30m</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Dashboard Hub: Activity NOW/LATER & Schedule Manager -->
+    <div class="dashboard-hub">
+      <!-- Left Column: Activity Center ("Happening NOW & LATER") -->
+      <div class="activity-box">
+        <div class="activity-header">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.25rem;">⚡</span>
+            <div>
+              <h3 style="font-size: 1.05rem; font-weight: 600; color: #fff;">Activity Center</h3>
+              <p style="font-size: 0.74rem; color: var(--text-muted);">Real-time workflow execution & upcoming scheduled triggers</p>
+            </div>
+          </div>
+          <span id="activity-beacon" class="activity-status-beacon beacon-idle">
+            <span class="status-dot" style="background: currentColor;"></span>
+            <span id="activity-beacon-text">System Idle</span>
+          </span>
+        </div>
+
+        <!-- Section A: Happening NOW -->
+        <div style="margin-top: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-cyan); font-weight: 600;">
+              🔴 Happening NOW
+            </span>
+            <span id="activity-elapsed-badge" class="badge-tag mono-font" style="font-size: 0.7rem; display: none;">
+              Elapsed: <span id="activity-elapsed-time">00:00</span>
+            </span>
+          </div>
+
+          <!-- Visual Stepper Bar -->
+          <div class="stepper-container">
+            <div id="stepper-progress-fill" class="stepper-progress-fill" style="width: 0%;"></div>
+            <div id="step-topic" class="step-node">
+              <div class="step-circle">🔍</div>
+              <span class="step-label">1. Topic</span>
+            </div>
+            <div id="step-story" class="step-node">
+              <div class="step-circle">📖</div>
+              <span class="step-label">2. Story AI</span>
+            </div>
+            <div id="step-images" class="step-node">
+              <div class="step-circle">🎨</div>
+              <span class="step-label">3. Images</span>
+            </div>
+            <div id="step-audio" class="step-node">
+              <div class="step-circle">🎙️</div>
+              <span class="step-label">4. Narration</span>
+            </div>
+            <div id="step-video" class="step-node">
+              <div class="step-circle">🎬</div>
+              <span class="step-label">5. Video</span>
+            </div>
+            <div id="step-db" class="step-node">
+              <div class="step-circle">💾</div>
+              <span class="step-label">6. DB Save</span>
+            </div>
+          </div>
+
+          <!-- Current Stage Status Message -->
+          <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-sm); padding: 10px 14px; margin-top: 10px;">
+            <div id="activity-current-label" style="font-size: 0.86rem; color: #e2e8f0; font-weight: 500;">
+              System Standby — Waiting for trigger or schedule
+            </div>
+            <div id="activity-detail-msg" style="font-size: 0.74rem; color: var(--text-muted); margin-top: 3px; font-family: var(--font-mono);">
+              Last completed: Little Anbu and the Animal Babies (All 6 scenes rendered)
+            </div>
+          </div>
+        </div>
+
+        <!-- Section B: Happening LATER -->
+        <div class="upcoming-box">
+          <div>
+            <div class="upcoming-title">
+              <span>⏳ Happening LATER (Scheduled)</span>
+            </div>
+            <div style="font-size: 0.76rem; color: #cbd5e1; margin-top: 3px;" id="upcoming-task-desc">
+              Next: Topic Scout → Story Script → 9:16 Watercolor Images → ElevenLabs Narration → Subtitled Video
+            </div>
+          </div>
+          <div class="upcoming-countdown" id="upcoming-countdown-text">
+            In ~30m
+          </div>
+        </div>
+
+        <!-- Master Trigger Button -->
+        <div style="margin-top: 18px; display: flex; gap: 10px; align-items: center;">
+          <button type="button" id="btn-master-run-pipeline" class="btn btn-primary pulse-btn" style="flex: 1; padding: 12px 20px; font-size: 0.95rem; font-weight: 600;">
+            🚀 Run Full Pipeline Now
+          </button>
+          <button type="button" id="btn-toggle-custom-topic" class="btn btn-outline" style="font-size: 0.8rem; padding: 12px 14px;" title="Specify custom topic">
+            ✏️ Custom Topic
+          </button>
+        </div>
+
+        <!-- Custom Topic Input Drawer (collapsible) -->
+        <div id="custom-topic-drawer" style="display: none; margin-top: 12px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+          <label class="form-label" style="margin-bottom: 6px;">Specify Custom Story Topic (optional):</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="input-custom-topic" class="form-input" placeholder="e.g. A kind puppy sharing food with a shivering bird in rain" style="flex: 1;">
+            <button type="button" id="btn-submit-custom-pipeline" class="btn btn-secondary" style="white-space: nowrap;">
+              ▶️ Run
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Schedule Timings & Automation Controls ("Change schedule timings") -->
+      <div class="activity-box">
+        <div class="activity-header">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.25rem;">⏰</span>
+            <div>
+              <h3 style="font-size: 1.05rem; font-weight: 600; color: #fff;">Schedule Automation</h3>
+              <p style="font-size: 0.74rem; color: var(--text-muted);">Change pipeline execution frequency on the fly</p>
+            </div>
+          </div>
+          <label class="toggle-control" style="font-size: 0.75rem;">
+            <input type="checkbox" id="toggle-schedule-enabled" checked>
+            <span class="toggle-slider"></span>
+            <span class="toggle-label" id="schedule-enabled-label">Active</span>
+          </label>
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <span style="font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Active Schedule</span>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+            <span id="active-schedule-label" style="font-size: 1.1rem; font-weight: 700; color: var(--accent-cyan);">Every 1 Hour</span>
+            <span id="active-schedule-cron" class="badge-tag mono-font">0 * * * *</span>
+          </div>
+        </div>
+
+        <!-- Quick Preset Buttons -->
+        <label class="form-label" style="font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 6px;">
+          Select Frequency Preset:
+        </label>
+        <div class="schedule-presets">
+          <button type="button" class="preset-chip active" data-cron="0 * * * *" data-label="Every 1 Hour">
+            ⏱️ Every 1 hr
+          </button>
+          <button type="button" class="preset-chip" data-cron="0 */2 * * *" data-label="Every 2 Hours">
+            ⏱️ Every 2 hrs
+          </button>
+          <button type="button" class="preset-chip" data-cron="0 */4 * * *" data-label="Every 4 Hours">
+            ⏱️ Every 4 hrs
+          </button>
+          <button type="button" class="preset-chip" data-cron="0 */6 * * *" data-label="Every 6 Hours">
+            ⏱️ Every 6 hrs
+          </button>
+          <button type="button" class="preset-chip" data-cron="0 6 * * *" data-label="Daily at 6:00 AM IST">
+            📅 Daily 6 AM
+          </button>
+          <button type="button" class="preset-chip" data-cron="custom" data-label="Custom Expression">
+            ⚙️ Custom
+          </button>
+        </div>
+
+        <!-- Custom Cron Input (visible when custom selected) -->
+        <div id="custom-cron-box" style="display: none; margin-top: 10px;">
+          <label class="form-label">Custom 5-Field Cron Expression:</label>
+          <input type="text" id="input-custom-cron" class="form-input mono-font" value="0 * * * *" placeholder="e.g. 0 */3 * * *">
+          <span class="form-hint">Format: minute hour day month day-of-week (Asia/Kolkata timezone)</span>
+        </div>
+
+        <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center;">
+          <span id="schedule-feedback" style="font-size: 0.76rem; color: #34d399;"></span>
+          <button type="button" id="btn-save-schedule" class="btn btn-secondary" style="font-size: 0.82rem; padding: 8px 16px;">
+            💾 Save & Apply Schedule
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Stories & Final Videos Gallery Section -->
+    <section class="gallery-section" style="margin-top: 8px;">
+      <div class="gallery-section-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 1.4rem;">🎬</span>
+          <div>
+            <h2 style="font-size: 1.25rem; font-weight: 700; color: #fff;">Stories & Final Videos Gallery</h2>
+            <p style="font-size: 0.78rem; color: var(--text-muted);">Browse all generated stories, watch subtitled 9:16 Shorts, and track YouTube publication status</p>
+          </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="gallery-filter-tabs">
+          <button type="button" class="gallery-tab active" data-filter="all">All Stories (<span id="count-filter-all">0</span>)</button>
+          <button type="button" class="gallery-tab" data-filter="ready">🎬 Videos Ready (<span id="count-filter-ready">0</span>)</button>
+          <button type="button" class="gallery-tab" data-filter="pending">⏳ Awaiting Approval (<span id="count-filter-pending">0</span>)</button>
+          <button type="button" class="gallery-tab" data-filter="uploaded">✅ Uploaded to YouTube (<span id="count-filter-uploaded">0</span>)</button>
+        </div>
+      </div>
+
+      <!-- Dynamic Gallery Grid -->
+      <div id="dashboard-stories-grid" class="stories-cards-grid">
+        <!-- Rendered dynamically by app.js -->
+        <div style="padding: 40px; text-align: center; color: var(--text-muted); grid-column: 1 / -1;">
+          Loading stories and videos from PostgreSQL & disk...
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Live Real-Time Background Activity Console -->
+    <section style="margin-top: 28px;">
+      <div class="card glass-card">
+        <div class="card-header" style="margin-bottom: 10px;">
+          <div class="card-title-group">
+            <span class="card-icon">📟</span>
+            <h2 class="card-title" style="font-size: 1rem;">Live Background Pipeline Activity</h2>
+            <span id="log-stream-badge" class="status-badge" style="background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.35); color: #10b981; font-size: 0.72rem; padding: 2px 8px;">
+              <span class="status-dot" style="background: #10b981;"></span> Live SSE Stream
+            </span>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" id="btn-clear-logs" class="btn-sm btn-outline" style="font-size: 0.75rem;">
+              🧹 Clear Console
+            </button>
+          </div>
+        </div>
+        <!-- Terminal Output Box -->
+        <div id="live-console" style="background: #060910; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-sm); padding: 12px 14px; height: 160px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.6; color: #cbd5e1;">
+          <div style="color: #64748b;">[System] Listening for real-time background pipeline events...</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Video Player Lightbox Modal (9:16 Vertical Video) -->
+  <div id="video-player-modal" class="modal-backdrop">
+    <div class="video-player-container">
+      <div class="video-player-header">
+        <div>
+          <h4 id="video-player-title" style="font-size: 0.95rem; font-weight: 600; color: #fff;">Story Video Preview</h4>
+          <span id="video-player-subtitle" style="font-size: 0.74rem; color: var(--accent-cyan); font-family: var(--font-mono);">9:16 Vertical Short with Subtitles</span>
+        </div>
+        <button type="button" id="video-player-close" class="modal-close-btn" style="position: static; font-size: 1.4rem;">&times;</button>
+      </div>
+
+      <div class="video-frame-box">
+        <video id="modal-video-element" controls autoplay loop playsinline>
+          <source id="modal-video-source" src="" type="video/mp4">
+          Your browser does not support HTML5 video.
+        </video>
+      </div>
+
+      <div style="padding: 12px 18px; background: rgba(255,255,255,0.03); display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; gap: 8px;">
+          <button type="button" id="btn-modal-switch-en" class="btn-sm btn-primary" style="font-size: 0.72rem;">English Video</button>
+          <button type="button" id="btn-modal-switch-ta" class="btn-sm btn-outline" style="font-size: 0.72rem;">Tamil Video</button>
+        </div>
+        <a id="btn-modal-download-video" href="#" download class="btn-sm btn-outline" style="font-size: 0.72rem;">
+          ⬇️ Download MP4
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- PostgreSQL Database Records Modal -->
+  <div id="db-modal" class="modal-backdrop">
+    <div class="modal-content glass-card" style="max-width: 1100px; max-height: 88vh; display: flex; flex-direction: column; width: 92%;">
+      <div class="card-header" style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+        <div class="card-title-group">
+          <span class="card-icon">🗄️</span>
+          <h2 class="card-title">PostgreSQL Database Records</h2>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button type="button" id="btn-db-tab-stories" class="btn-sm btn-primary" style="font-size:0.75rem;">📖 Stories Schema</button>
+          <button type="button" id="btn-db-tab-uploads" class="btn-sm btn-outline" style="font-size:0.75rem;">📤 Uploads History</button>
+          <button type="button" id="btn-refresh-db-uploads" class="btn-sm btn-outline">🔄 Refresh</button>
+          <button type="button" id="db-modal-close" class="modal-close-btn" style="position: static; margin-left: 10px;">&times;</button>
+        </div>
+      </div>
+
+      <!-- View 1: Stories Table (Exact User Schema) -->
+      <div id="db-stories-view" style="flex: 1; overflow-y: auto; max-height: 65vh;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.78rem; font-family: var(--font-mono); text-align: left;">
+          <thead>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.15); color: var(--accent-cyan); background: rgba(0,0,0,0.3);">
+              <th style="padding: 10px 8px;">Story ID</th>
+              <th style="padding: 10px 8px;">Title (EN / TA)</th>
+              <th style="padding: 10px 8px;">Theme & Moral</th>
+              <th style="padding: 10px 8px;">Status</th>
+              <th style="padding: 10px 8px;">Folder Path</th>
+              <th style="padding: 10px 8px;">EN Video</th>
+              <th style="padding: 10px 8px;">TA Video</th>
+              <th style="padding: 10px 8px;">YouTube IDs</th>
+            </tr>
+          </thead>
+          <tbody id="db-stories-tbody">
+            <tr><td colspan="8" style="padding: 20px; text-align: center; color: #64748b;">Loading stories from PostgreSQL...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- View 2: Uploads Table -->
+      <div id="db-uploads-view" style="flex: 1; overflow-y: auto; max-height: 65vh; display: none;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; font-family: var(--font-mono); text-align: left;">
+          <thead>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.15); color: var(--accent-cyan); background: rgba(0,0,0,0.3);">
+              <th style="padding: 10px 8px;">Story ID</th>
+              <th style="padding: 10px 8px;">File Name</th>
+              <th style="padding: 10px 8px;">Target</th>
+              <th style="padding: 10px 8px;">Size</th>
+              <th style="padding: 10px 8px;">Status</th>
+              <th style="padding: 10px 8px;">Remote Link</th>
+              <th style="padding: 10px 8px;">Timestamp</th>
+            </tr>
+          </thead>
+          <tbody id="db-uploads-tbody">
+            <tr><td colspan="7" style="padding: 20px; text-align: center; color: #64748b;">Loading uploads from PostgreSQL...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js?v=6"></script>
+</body>
+</html>
