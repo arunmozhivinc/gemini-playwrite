@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: ffmpeg-n8n-renderer
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 8787
+      - key: HOST
+        value: 0.0.0.0
+      - key: MAX_FILE_MB
+        value: 250
+      - key: MAX_CONCURRENT_JOBS
+        value: 1
+      - key: RENDER_API_KEY
+        sync: false

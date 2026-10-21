@@ -1,0 +1,11 @@
+node_modules/
+.env
+temp/
+test_assets/
+*.mp4
+*.mp3
+*.wav
+*.bin
+*.log
+.DS_Store
+Thumbs.db

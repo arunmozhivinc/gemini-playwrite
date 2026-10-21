@@ -929,9 +929,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (resStatus && resStatus.ok) {
         const data = await resStatus.json();
-        if (data.success && statusAgy) {
-          const dot = statusAgy.querySelector('.status-dot');
-          if (dot) dot.style.background = data.antigravity?.available ? '#34d399' : '#f87171';
+        if (data.success) {
+          if (statusAgy) {
+            const dot = statusAgy.querySelector('.status-dot');
+            if (dot) dot.style.background = data.antigravity?.available ? '#34d399' : '#f87171';
+          }
+          if (statusFfmpeg) {
+            const dot = statusFfmpeg.querySelector('.status-dot');
+            if (dot) dot.style.background = data.ffmpeg?.available ? '#34d399' : '#f87171';
+            statusFfmpeg.title = data.ffmpeg?.available
+              ? 'FFmpeg Subtitling Service: Active & Healthy (Port 8787)'
+              : 'FFmpeg Subtitling Service: Offline — Using local fallback';
+          }
+          if (statusElevenlabs) {
+            const dot = statusElevenlabs.querySelector('.status-dot');
+            if (dot) dot.style.background = data.elevenlabs?.configured ? '#34d399' : '#f87171';
+            statusElevenlabs.title = data.elevenlabs?.configured
+              ? 'ElevenLabs: API Key Configured & Ready'
+              : 'ElevenLabs: API Key Missing in .env';
+          }
+          if (statusDb) {
+            const dot = statusDb.querySelector('.status-dot');
+            if (dot) dot.style.background = data.db?.connected ? '#34d399' : '#f87171';
+            statusDb.title = data.db?.connected
+              ? 'PostgreSQL: Connected & Syncing'
+              : 'PostgreSQL: Offline — File-based storage active';
+          }
         }
       }
 

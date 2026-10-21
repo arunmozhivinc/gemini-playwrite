@@ -22,7 +22,7 @@
   },
   "generator": {
     "provider": "playwright-gemini",
-    "profileDir": "D:\\workspace\\image-pipeline\\gemini_chrome_profile",
+    "profileDir": "./gemini_chrome_profile",
     "defaultModel": "imagen-3",
     "defaultAspectRatio": "9:16",
     "width": 1080,

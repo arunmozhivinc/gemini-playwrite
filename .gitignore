@@ -21,3 +21,9 @@ Thumbs.db
 .idea/
 .agents/
 .gemini/
+
+# Local Chrome automation profile
+gemini_chrome_profile/
+
+# FFmpeg microservice temporary processing directory
+services/ffmpeg/temp/

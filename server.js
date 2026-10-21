@@ -283,6 +283,13 @@ app.get('/api/status', async (req, res) => {
       antigravity.checkStatus()
     ]);
 
+    let ffmpegAvailable = false;
+    try {
+      const ffmpegUrl = config.ffmpegService?.url || process.env.FFMPEG_SERVICE_URL || 'http://localhost:8787';
+      const fRes = await fetch(`${ffmpegUrl}/health`, { signal: AbortSignal.timeout(1200) });
+      ffmpegAvailable = fRes.ok;
+    } catch (_) {}
+
     const nextIndex = manifest.getNextIndex();
 
     res.json({
@@ -296,6 +303,16 @@ app.get('/api/status', async (req, res) => {
       antigravity: {
         available: agyStatus.available,
         cliPath: agyStatus.path || config.antigravity?.cliPath
+      },
+      ffmpeg: {
+        available: ffmpegAvailable,
+        url: config.ffmpegService?.url || 'http://localhost:8787'
+      },
+      db: {
+        connected: Boolean(db && db.connected)
+      },
+      elevenlabs: {
+        configured: Boolean(process.env.ELEVENLABS_API_KEY)
       },
       settings: {
         pattern: config.naming?.defaultPattern || 'frame_{index:04d}.png',
@@ -1738,6 +1755,39 @@ console.log('[Cron]   → Daily 2:00 AM IST: Archive to Google Drive');
 // =============================================================================
 //  SERVER START
 // =============================================================================
+const http = require('http');
+const { spawn } = require('child_process');
+
+function ensureInternalFfmpegService() {
+  const req = http.get('http://localhost:8787/health', { timeout: 1000 }, (res) => {
+    if (res.statusCode === 200) {
+      console.log('🎬 [FFmpeg Service] Connected & healthy on port 8787');
+    }
+  });
+  req.on('error', () => {
+    const ffmpegPath = path.join(__dirname, 'services', 'ffmpeg', 'server.js');
+    if (fs.existsSync(ffmpegPath)) {
+      console.log('🎬 [FFmpeg Service] Auto-starting internal service on port 8787...');
+      const child = spawn(process.execPath, [ffmpegPath], {
+        cwd: path.join(__dirname, 'services', 'ffmpeg'),
+        env: { ...process.env, PORT: '8787', FFMPEG_PORT: '8787' },
+        stdio: 'ignore'
+      });
+      process.on('exit', () => {
+        try {
+          if (process.platform === 'win32') {
+            spawn('taskkill', ['/pid', child.pid, '/T', '/F'], { stdio: 'ignore' });
+          } else {
+            child.kill();
+          }
+        } catch (_) {}
+      });
+    }
+  });
+}
+
+ensureInternalFfmpegService();
+
 app.listen(PORT, () => {
   console.log(`=======================================================`);
   console.log(`🚀 YouTube Kids Shorts Pipeline — Enterprise Mode`);
