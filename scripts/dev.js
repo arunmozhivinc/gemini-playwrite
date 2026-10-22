@@ -115,7 +115,7 @@ async function main() {
     processes.push(ffmpegProc);
   }
 
-  // 2. Start Main Application Web Server
+  // 2. Start Main Application Web Server (stable long-running process)
   console.log(`${colors.green}[APP:3000]${colors.reset} Spawning Gemini-Playwrite Web Server (server.js)...`);
   const appProc = spawn(process.execPath, [APP_SERVER_PATH], {
     cwd: ROOT_DIR,

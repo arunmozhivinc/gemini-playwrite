@@ -67,12 +67,15 @@ const db = new DatabaseService();
 
 const storyGenerator = new StoryGenerator({
   cliPath: config.antigravity?.cliPath,
-  timeoutMs: config.antigravity?.timeoutMs || 180000
+  timeoutMs: config.antigravity?.timeoutMs || 180000,
+  outputDir: path.join(__dirname, 'output'),
+  db
 });
 
 const topicScout = new TopicScout({
   newsApiKey: process.env.NEWS_API_KEY,
-  db
+  db,
+  cliPath: config.antigravity?.cliPath
 });
 
 const pipeline = new PipelineOrchestrator({
@@ -103,6 +106,9 @@ const currentActivity = {
   lastCompleted: null,
   lastCompletedAt: null
 };
+
+let isPipelineBusy = false;
+let pipelineBusyStartedAt = null;
 
 function broadcastActivity() {
   const payload = {
@@ -1229,6 +1235,49 @@ app.post('/api/stories/:storyId/publish', async (req, res) => {
 
   const story = JSON.parse(fs.readFileSync(scriptPath, 'utf8'));
 
+  // 0. Check if this story is ALREADY uploaded to YouTube
+  const ytUploadPath = path.join(storyDir, 'youtube_upload.json');
+  let existingYt = null;
+  if (fs.existsSync(ytUploadPath)) {
+    try { existingYt = JSON.parse(fs.readFileSync(ytUploadPath, 'utf8')); } catch (_) {}
+  }
+
+  let dbStory = null;
+  try {
+    const stories = await db.getAllStories();
+    dbStory = stories.find(s => s.story_id === storyId);
+  } catch (_) {}
+
+  const existingEnId = story.youtube_en_id || existingYt?.results?.en?.videoId || dbStory?.youtube_en_id;
+  const existingTaId = story.youtube_ta_id || existingYt?.results?.ta?.videoId || dbStory?.youtube_ta_id;
+
+  if (existingEnId || existingTaId) {
+    pipeline.updatePipelineStatus(storyDir, 'upload', 'done', { results: existingYt?.results });
+    await db.upsertStory({
+      story_id: storyId,
+      status: 'uploaded',
+      youtube_en_id: existingEnId || null,
+      youtube_ta_id: existingTaId || null
+    });
+
+    broadcastLog({
+      stage: 'upload',
+      level: 'info',
+      message: `🛑 Story "${story.title_en}" is ALREADY published on YouTube Shorts (EN: ${existingEnId || 'N/A'}, TA: ${existingTaId || 'N/A'}). Duplicate posting strictly prevented.`
+    });
+
+    return res.json({
+      success: true,
+      already_published: true,
+      message: `Story "${story.title_en}" is already published on YouTube Shorts. Duplicate upload strictly prevented!`,
+      youtube_en_id: existingEnId,
+      youtube_ta_id: existingTaId,
+      youtube_en_url: existingEnId ? `https://youtube.com/shorts/${existingEnId}` : null,
+      youtube_ta_url: existingTaId ? `https://youtube.com/shorts/${existingTaId}` : null,
+      result: existingYt || { success: true }
+    });
+  }
+
   try {
     const isAuth = await youtubePublisher.isAuthenticated();
     if (!isAuth) {
@@ -1258,6 +1307,7 @@ app.post('/api/stories/:storyId/publish', async (req, res) => {
     const taId = result?.results?.ta?.videoId || result?.uploads?.ta?.videoId || null;
 
     if (enId || taId) {
+      pipeline.updatePipelineStatus(storyDir, 'upload', 'done', { results: result?.results || result?.uploads });
       await db.upsertStory({
         story_id: storyId,
         status: 'uploaded',
@@ -1557,8 +1607,6 @@ app.get('/api/topics/today', async (req, res) => {
   }
 });
 
-let isPipelineBusy = false;
-
 /**
  * Manually trigger any cron job
  */
@@ -1584,6 +1632,19 @@ app.post('/api/cron/trigger', async (req, res) => {
         const story = fs.existsSync(scriptPath) ? JSON.parse(fs.readFileSync(scriptPath, 'utf8')) : null;
         if (story) {
           youtubePublisher.uploadAll(storyDir, story, ['en', 'ta'])
+            .then(async uploadRes => {
+              if (uploadRes && uploadRes.success) {
+                pipeline.updatePipelineStatus(storyDir, 'upload', 'done', { results: uploadRes.results });
+                const enId = uploadRes.results?.en?.videoId || null;
+                const taId = uploadRes.results?.ta?.videoId || null;
+                await db.upsertStory({
+                  story_id: storyId,
+                  status: 'uploaded',
+                  youtube_en_id: enId,
+                  youtube_ta_id: taId
+                });
+              }
+            })
             .catch(e => console.error(`[Cron] Upload error for ${storyId}:`, e.message));
         }
       }
@@ -1669,11 +1730,21 @@ function applySchedule(expression, enabled = true) {
   if (enabled && cron.validate(currentCronExpression)) {
     scheduledCronTask = cron.schedule(currentCronExpression, async () => {
       console.log(`[Cron] ⏰ Hourly Story-to-Video Pipeline triggered (${currentCronExpression})...`);
+      
+      // Watchdog: If previous pipeline run has been marked busy for > 35 minutes, auto-reset
       if (isPipelineBusy) {
-        console.log('[Cron] ⚠️ A pipeline execution is already in progress. Skipping this hour trigger.');
-        return;
+        const busyDurationMs = pipelineBusyStartedAt ? Date.now() - pipelineBusyStartedAt : 0;
+        if (busyDurationMs > 35 * 60 * 1000) {
+          console.warn(`[Cron] ⚠️ Previous pipeline run was busy for ${(busyDurationMs / 60000).toFixed(1)}m. Forcing busy flag reset.`);
+          isPipelineBusy = false;
+        } else {
+          console.log('[Cron] ⚠️ A pipeline execution is already in progress. Skipping this hour trigger.');
+          return;
+        }
       }
+
       isPipelineBusy = true;
+      pipelineBusyStartedAt = Date.now();
       try {
         const topic = await topicScout.getHourlyFreshTopic([], db);
         console.log(`[Cron] 🎯 Selected Topic for this hour: "${topic}"`);
@@ -1683,6 +1754,7 @@ function applySchedule(expression, enabled = true) {
         console.error('[Cron] ❌ Hourly Story-to-Video generation failed:', err.message);
       } finally {
         isPipelineBusy = false;
+        pipelineBusyStartedAt = null;
       }
     }, { timezone: 'Asia/Kolkata' });
     console.log(`[Schedule] Active story-to-video schedule set: ${currentCronExpression}`);
@@ -1692,7 +1764,7 @@ function applySchedule(expression, enabled = true) {
 // Initialize active schedule
 applySchedule(currentCronExpression, isScheduleEnabled);
 
-// Hourly: Detect completed videos + upload to YouTube
+// Hourly: Detect completed videos + upload to YouTube (strictly prevents re-uploading approved/posted videos)
 cron.schedule('0 * * * *', async () => {
   console.log('[Cron] 🔍 Checking for ready-to-upload stories...');
   try {
@@ -1703,14 +1775,43 @@ cron.schedule('0 * * * *', async () => {
     }
 
     for (const { storyId, storyDir } of ready) {
-      console.log(`[Cron] Uploading: ${storyId}`);
       const scriptPath = path.join(storyDir, 'story_script.json');
       if (!fs.existsSync(scriptPath)) continue;
       const story = JSON.parse(fs.readFileSync(scriptPath, 'utf8'));
+
+      // Check if story is already uploaded in DB
+      let dbStory = null;
+      try {
+        const allDb = await db.getAllStories();
+        dbStory = allDb.find(s => s.story_id === storyId);
+      } catch (_) {}
+
+      if (dbStory?.status === 'uploaded' || dbStory?.youtube_en_id || dbStory?.youtube_ta_id || story.youtube_en_id || story.youtube_ta_id) {
+        pipeline.updatePipelineStatus(storyDir, 'upload', 'done');
+        console.log(`[Cron] 🛑 Story "${story.title_en}" (${storyId}) is already uploaded. Skipping duplicate upload.`);
+        continue;
+      }
+
+      // Check approval workflow: stories require manual approval in Dashboard unless AUTO_PUBLISH_TO_YOUTUBE is true
+      const isApproved = dbStory?.status === 'approved' || process.env.AUTO_PUBLISH_TO_YOUTUBE === 'true';
+      if (!isApproved) {
+        console.log(`[Cron] ⏳ Story "${story.title_en}" (${storyId}) is awaiting manual approval in Dashboard before YouTube publishing. Skipping auto-upload.`);
+        continue;
+      }
+
+      console.log(`[Cron] Uploading approved story: ${storyId}`);
       try {
         const uploadRes = await youtubePublisher.uploadAll(storyDir, story, ['en', 'ta']);
         if (uploadRes && uploadRes.success) {
-          pipeline.updatePipelineStatus(storyDir, 'upload', 'done');
+          pipeline.updatePipelineStatus(storyDir, 'upload', 'done', { results: uploadRes.results });
+          const enId = uploadRes.results?.en?.videoId || null;
+          const taId = uploadRes.results?.ta?.videoId || null;
+          await db.upsertStory({
+            story_id: storyId,
+            status: 'uploaded',
+            youtube_en_id: enId,
+            youtube_ta_id: taId
+          });
           console.log(`[Cron] ✅ Uploaded: ${storyId}`);
         } else {
           const errReason = uploadRes?.results?.en?.error || uploadRes?.results?.ta?.error || 'Unknown upload failure';
