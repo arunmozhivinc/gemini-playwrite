@@ -16,6 +16,7 @@ const TopicScout = require('./lib/topicScout');
 const PipelineOrchestrator = require('./lib/pipelineOrchestrator');
 const Namer = require('./lib/namer');
 const ManifestManager = require('./lib/manifest');
+const BgmSelector = require('./lib/bgmSelector');
 
 // Load config
 const configPath = path.join(__dirname, 'config.json');
@@ -23,6 +24,14 @@ let config = {};
 if (fs.existsSync(configPath)) {
   config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 }
+
+// Global stability handlers: Prevent process termination on unexpected rejections
+process.on('unhandledRejection', (reason) => {
+  console.error('[Process] ⚠️ Unhandled Promise Rejection:', reason?.message || reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[Process] ❌ Uncaught Exception:', err?.message || err);
+});
 
 const app = express();
 const PORT = process.env.PORT || config.server?.port || 3000;
@@ -51,7 +60,13 @@ const imageGenerator = new ImageGenerator({
 const audioNarrator = new AudioNarrator({
   apiKey: process.env.ELEVENLABS_API_KEY,
   voiceIdEn: process.env.ELEVENLABS_VOICE_EN,
-  voiceIdTa: process.env.ELEVENLABS_VOICE_TA
+  voiceIdTa: process.env.ELEVENLABS_VOICE_TA,
+  bgmEnabled: config.bgm?.enabled !== false,
+  bgmVolume: config.bgm?.volume || 0.08,
+  bgmAssetsDir: config.bgm?.assetsDir
+    ? path.resolve(__dirname, config.bgm.assetsDir)
+    : path.join(__dirname, 'assets', 'bgm'),
+  bgmAutoDownload: config.bgm?.autoDownload !== false
 });
 
 const videoAssembler = new VideoAssembler({
@@ -67,7 +82,8 @@ const db = new DatabaseService();
 
 const storyGenerator = new StoryGenerator({
   cliPath: config.antigravity?.cliPath,
-  timeoutMs: config.antigravity?.timeoutMs || 180000,
+  timeoutMs: config.antigravity?.timeoutMs || 240000,
+  sceneCount: config.pipeline?.sceneCount || 12,
   outputDir: path.join(__dirname, 'output'),
   db
 });
@@ -80,13 +96,21 @@ const topicScout = new TopicScout({
 
 const pipeline = new PipelineOrchestrator({
   outputDir: path.join(__dirname, 'output'),
-  sceneCount: 6,
-  languages: ['en', 'ta'],
+  sceneCount: config.pipeline?.sceneCount || 12,
+  languages: config.pipeline?.languages || ['en', 'ta'],
   autoUpload: true,
   youtubeN8nFolderId: '15y4Ettt3rjbhCb_dt8PVoVqRBB5WLtX1',
   antigravityCli: config.antigravity?.cliPath,
-  timeoutMs: config.antigravity?.timeoutMs || 180000,
+  timeoutMs: config.antigravity?.timeoutMs || 240000,
   ffmpegService: config.ffmpegService,
+  bgm: {
+    enabled: config.bgm?.enabled !== false,
+    volume: config.bgm?.volume || 0.08,
+    assetsDir: config.bgm?.assetsDir
+      ? path.resolve(__dirname, config.bgm.assetsDir)
+      : path.join(__dirname, 'assets', 'bgm'),
+    autoDownload: config.bgm?.autoDownload !== false
+  },
   db
 });
 
@@ -156,7 +180,7 @@ pipeline.on('stage', (data) => {
       currentActivity.stageLabel = '🔍 Scouting trending kids topic from Google Trends...';
     } else if (stage === 'story') {
       currentActivity.progress = 30;
-      currentActivity.stageLabel = '📖 Generating bilingual 6-scene story with Antigravity AI...';
+      currentActivity.stageLabel = `📖 Generating bilingual ${config.pipeline?.sceneCount || 12}-scene story with Antigravity AI...`;
     } else if (stage === 'images') {
       currentActivity.progress = 55;
       currentActivity.stageLabel = '🎨 Generating 9:16 watercolor scene illustrations...';
@@ -320,6 +344,14 @@ app.get('/api/status', async (req, res) => {
       elevenlabs: {
         configured: Boolean(process.env.ELEVENLABS_API_KEY)
       },
+      bgm: {
+        enabled: config.bgm?.enabled !== false,
+        volume: config.bgm?.volume || 0.08,
+        autoDownload: config.bgm?.autoDownload !== false
+      },
+      pipeline: {
+        sceneCount: config.pipeline?.sceneCount || 12
+      },
       settings: {
         pattern: config.naming?.defaultPattern || 'frame_{index:04d}.png',
         aspectRatio: config.generator?.defaultAspectRatio || '16:9',
@@ -343,6 +375,41 @@ app.post('/api/pattern/preview', (req, res) => {
     shot: shot || 1
   });
   res.json({ success: true, preview: sample });
+});
+
+/**
+ * BGM Catalog — list all mood tracks and their availability
+ */
+app.get('/api/bgm/catalog', (req, res) => {
+  const bgmSelector = new BgmSelector({
+    assetsDir: config.bgm?.assetsDir
+      ? path.resolve(__dirname, config.bgm.assetsDir)
+      : path.join(__dirname, 'assets', 'bgm'),
+    autoDownload: false
+  });
+  res.json({ success: true, catalog: bgmSelector.getCatalog() });
+});
+
+/**
+ * BGM Pre-download — trigger download of all BGM tracks in the background
+ */
+app.post('/api/bgm/predownload', async (req, res) => {
+  const bgmSelector = new BgmSelector({
+    assetsDir: config.bgm?.assetsDir
+      ? path.resolve(__dirname, config.bgm.assetsDir)
+      : path.join(__dirname, 'assets', 'bgm'),
+    autoDownload: true
+  });
+
+  // Respond immediately and run download in background
+  res.json({ success: true, message: 'BGM pre-download started in background. Check /api/bgm/catalog for status.' });
+
+  // Download all tracks in background (non-blocking)
+  const { BgmSelector: Selector } = { BgmSelector: require('./lib/bgmSelector') };
+  const moods = ['adventure', 'gentle', 'playful', 'nature', 'curious', 'festive', 'tender', 'default'];
+  for (const mood of moods) {
+    bgmSelector.selectForStory({ theme: mood }).catch(() => {});
+  }
 });
 
 /**
@@ -1175,7 +1242,8 @@ app.post('/api/schedule/update', (req, res) => {
  * Dashboard: One-Click Full Pipeline Run (Auto or Custom Topic)
  */
 app.post('/api/pipeline/run-full', async (req, res) => {
-  const { topic } = req.body;
+  const { topic, story_id, storyId } = req.body;
+  const targetStoryId = story_id || storyId || null;
   if (isPipelineBusy) {
     return res.status(409).json({ success: false, error: 'A pipeline execution is already in progress.' });
   }
@@ -1184,28 +1252,36 @@ app.post('/api/pipeline/run-full', async (req, res) => {
   currentActivity.status = 'running';
   currentActivity.startedAt = new Date().toISOString();
   currentActivity.progress = 5;
-  currentActivity.stageLabel = '🚀 Initializing Full Automated Pipeline...';
+  currentActivity.stageLabel = targetStoryId
+    ? `🔄 Resuming Pipeline for Story: ${targetStoryId}...`
+    : '🚀 Initializing Full Automated Pipeline...';
   broadcastActivity();
 
   // Non-blocking response
   res.json({
     success: true,
-    message: 'Pipeline started successfully! Live progress is streaming on dashboard.'
+    message: targetStoryId
+      ? `Resuming pipeline for ${targetStoryId}! Live progress is streaming on dashboard.`
+      : 'Pipeline started successfully! Live progress is streaming on dashboard.'
   });
 
   (async () => {
     try {
-      const selectedTopic = topic || await topicScout.getHourlyFreshTopic([], db);
+      const selectedTopic = targetStoryId ? null : (topic || await topicScout.getHourlyFreshTopic([], db));
       broadcastLog({
         stage: 'pipeline',
         level: 'info',
-        message: `🚀 Full Pipeline Triggered for Topic: "${selectedTopic}"`
+        message: targetStoryId
+          ? `🔄 Resuming Story Pipeline for ID: "${targetStoryId}"`
+          : `🚀 Full Pipeline Triggered for Topic: "${selectedTopic}"`
       });
-      await pipeline.run({ topic: selectedTopic, skipUpload: true });
+      await pipeline.run({ storyId: targetStoryId || undefined, topic: selectedTopic || undefined, skipUpload: true });
       broadcastLog({
         stage: 'pipeline',
         level: 'success',
-        message: `🎉 Full Pipeline completed successfully for: "${selectedTopic}"`
+        message: targetStoryId
+          ? `🎉 Story Pipeline completed successfully for: "${targetStoryId}"`
+          : `🎉 Full Pipeline completed successfully for: "${selectedTopic}"`
       });
     } catch (err) {
       console.error('[Full Pipeline] Failed:', err.message);
@@ -1476,7 +1552,7 @@ app.post('/api/audio/generate', async (req, res) => {
   const story = JSON.parse(fs.readFileSync(scriptPath, 'utf8'));
 
   try {
-    const result = await audioNarrator.generateAllSceneAudio(story.scenes, storyDir, languages);
+    const result = await audioNarrator.generateAllSceneAudio(story.scenes, storyDir, languages, story);
     res.json({ success: true, story_id, result });
   } catch (err) {
     res.status(500).json({ error: err.message });

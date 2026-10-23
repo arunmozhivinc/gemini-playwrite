@@ -10,7 +10,7 @@
   "antigravity": {
     "cliPath": "C:\\Users\\Admin\\.gemini\\bin\\agy.exe",
     "promptExpansionEnabled": true,
-    "timeoutMs": 180000
+    "timeoutMs": 240000
   },
   "gdrive": {
     "binPath": "C:\\Users\\Admin\\.gemini\\antigravity\\plugin_data\\gdrive\\bin\\gdrive-986250228.exe",
@@ -27,6 +27,17 @@
     "defaultAspectRatio": "9:16",
     "width": 1080,
     "height": 1920
+  },
+  "pipeline": {
+    "sceneCount": 12,
+    "maxShortsSeconds": 58,
+    "languages": ["en", "ta"]
+  },
+  "bgm": {
+    "enabled": true,
+    "volume": 0.08,
+    "assetsDir": "./assets/bgm",
+    "autoDownload": true
   },
   "naming": {
     "defaultPattern": "frame_{index:04d}.png",

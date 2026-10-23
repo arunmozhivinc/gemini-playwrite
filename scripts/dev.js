@@ -68,7 +68,11 @@ function killProcess(child) {
   }
 }
 
+let isShuttingDown = false;
+
 function cleanupAndExit() {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
   console.log(`\n${colors.yellow}Shutting down all services gracefully...${colors.reset}`);
   for (const p of processes) {
     killProcess(p);
@@ -116,20 +120,27 @@ async function main() {
   }
 
   // 2. Start Main Application Web Server (stable long-running process)
-  console.log(`${colors.green}[APP:3000]${colors.reset} Spawning Gemini-Playwrite Web Server (server.js)...`);
-  const appProc = spawn(process.execPath, [APP_SERVER_PATH], {
-    cwd: ROOT_DIR,
-    env: { ...process.env, PORT: process.env.PORT || '3000' }
-  });
+  function startAppServer() {
+    console.log(`${colors.green}[APP:3000]${colors.reset} Spawning Gemini-Playwrite Web Server (server.js)...`);
+    const appProc = spawn(process.execPath, [APP_SERVER_PATH], {
+      cwd: ROOT_DIR,
+      env: { ...process.env, PORT: process.env.PORT || '3000' }
+    });
 
-  appProc.stdout.on('data', (d) => log('APP:3000', colors.green, d));
-  appProc.stderr.on('data', (d) => log('APP:3000', colors.red, d));
-  appProc.on('exit', (code) => {
-    console.log(`${colors.yellow}[APP:3000] App exited with code ${code}${colors.reset}`);
-    cleanupAndExit();
-  });
+    appProc.stdout.on('data', (d) => log('APP:3000', colors.green, d));
+    appProc.stderr.on('data', (d) => log('APP:3000', colors.red, d));
+    appProc.on('exit', (code) => {
+      console.log(`${colors.yellow}[APP:3000] App exited with code ${code}${colors.reset}`);
+      if (!isShuttingDown) {
+        console.log(`${colors.yellow}[APP:3000] Auto-restarting server in 2 seconds...${colors.reset}`);
+        setTimeout(startAppServer, 2000);
+      }
+    });
 
-  processes.push(appProc);
+    processes.push(appProc);
+  }
+
+  startAppServer();
 }
 
 main().catch((err) => {

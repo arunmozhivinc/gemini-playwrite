@@ -9,6 +9,7 @@
     "app": "node server.js",
     "ffmpeg": "node services/ffmpeg/server.js",
     "generate:standalone": "node scripts/generate_images.js",
+    "download:bgm": "node scripts/download_bgm.js",
     "cli": "node cli.js",
     "status": "node cli.js --status"
   },
