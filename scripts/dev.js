@@ -98,10 +98,13 @@ async function main() {
   console.log(`${colors.gray}----------------------------------------------------------------${colors.reset}\n`);
 
   // 1. Start FFmpeg Service
-  const ffmpegAlreadyRunning = await checkPortInUse(8787);
-  if (ffmpegAlreadyRunning) {
-    console.log(`${colors.cyan}[FFMPEG:8787]${colors.reset} FFmpeg service is already active on port 8787.`);
-  } else {
+  async function startFfmpegServer() {
+    const ffmpegAlreadyRunning = await checkPortInUse(8787);
+    if (ffmpegAlreadyRunning) {
+      console.log(`${colors.cyan}[FFMPEG:8787]${colors.reset} FFmpeg service is already active on port 8787.`);
+      return;
+    }
+
     console.log(`${colors.cyan}[FFMPEG:8787]${colors.reset} Spawning internal FFmpeg microservice (services/ffmpeg/server.js)...`);
     const ffmpegProc = spawn(process.execPath, [FFMPEG_SERVER_PATH], {
       cwd: path.join(ROOT_DIR, 'services', 'ffmpeg'),
@@ -111,13 +114,17 @@ async function main() {
     ffmpegProc.stdout.on('data', (d) => log('FFMPEG:8787', colors.cyan, d));
     ffmpegProc.stderr.on('data', (d) => log('FFMPEG:8787', colors.red, d));
     ffmpegProc.on('exit', (code) => {
-      if (code !== 0 && code !== null) {
-        console.log(`${colors.red}[FFMPEG:8787] Exited with code ${code}${colors.reset}`);
+      console.log(`${colors.red}[FFMPEG:8787] Exited with code ${code}${colors.reset}`);
+      if (!isShuttingDown) {
+        console.log(`${colors.cyan}[FFMPEG:8787] Auto-restarting FFmpeg service in 2 seconds...${colors.reset}`);
+        setTimeout(startFfmpegServer, 2000);
       }
     });
 
     processes.push(ffmpegProc);
   }
+
+  await startFfmpegServer();
 
   // 2. Start Main Application Web Server (stable long-running process)
   function startAppServer() {

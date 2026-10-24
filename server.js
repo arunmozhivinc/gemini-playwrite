@@ -133,6 +133,7 @@ const currentActivity = {
 
 let isPipelineBusy = false;
 let pipelineBusyStartedAt = null;
+let youtubeDailyLimitPausedUntil = 0;
 
 function broadcastActivity() {
   const payload = {
@@ -1125,16 +1126,18 @@ app.get('/api/dashboard/overview', async (req, res) => {
  */
 app.get('/api/dashboard/stories', async (req, res) => {
   try {
-    const dbStories = await db.getAllStories();
+    const allDbStories = await db.getAllStories({ includeDeleted: true });
+    const deletedStoryIds = new Set(allDbStories.filter(s => s.is_deleted).map(s => s.story_id));
+    const dbStories = allDbStories.filter(s => !s.is_deleted);
     const outputDir = path.join(__dirname, 'output');
     const dbStoryIds = new Set(dbStories.map(s => s.story_id));
 
-    // Also include any story folders physically on disk
+    // Also include any story folders physically on disk (excluding any soft-deleted stories)
     if (fs.existsSync(outputDir)) {
       const diskDirs = fs.readdirSync(outputDir, { withFileTypes: true })
         .filter(d => d.isDirectory() && !d.name.startsWith('.') && !d.name.startsWith('_'));
       for (const d of diskDirs) {
-        if (!dbStoryIds.has(d.name)) {
+        if (!dbStoryIds.has(d.name) && !deletedStoryIds.has(d.name)) {
           const scriptPath = path.join(outputDir, d.name, 'story_script.json');
           let script = {};
           if (fs.existsSync(scriptPath)) {
@@ -1464,23 +1467,24 @@ app.delete('/api/stories/:storyId', async (req, res) => {
 
   let dbDeleted = false;
   try {
-    dbDeleted = await db.deleteStory(safeStoryId);
+    // Soft delete: marks is_deleted = TRUE in PostgreSQL so topic/theme is NEVER duplicated
+    dbDeleted = await db.deleteStory(safeStoryId, { soft: true });
   } catch (e) {
-    console.error(`[Delete Story] Error deleting DB records for ${safeStoryId}:`, e.message);
+    console.error(`[Delete Story] Error soft-deleting DB records for ${safeStoryId}:`, e.message);
   }
 
   broadcastLog({
     stage: 'general',
     level: 'warn',
-    message: `🗑️ Deleted story "${safeStoryId}" (Disk folder: ${folderDeleted ? 'deleted' : 'not found'}, DB: ${dbDeleted ? 'removed' : 'not found'})`
+    message: `🗑️ Soft-deleted story "${safeStoryId}" (Disk freed: ${folderDeleted ? 'yes' : 'no'}, DB preserved with is_deleted=true for zero duplicate generation)`
   });
 
   res.json({
     success: true,
-    message: `Story "${safeStoryId}" deleted successfully.`,
+    message: `Story "${safeStoryId}" media removed from disk and preserved in DB with is_deleted=true for deduplication.`,
     story_id: safeStoryId,
     folder_deleted: folderDeleted,
-    db_deleted: dbDeleted
+    db_soft_deleted: dbDeleted
   });
 });
 
@@ -1842,6 +1846,12 @@ applySchedule(currentCronExpression, isScheduleEnabled);
 
 // Hourly: Detect completed videos + upload to YouTube (strictly prevents re-uploading approved/posted videos)
 cron.schedule('0 * * * *', async () => {
+  if (Date.now() < youtubeDailyLimitPausedUntil) {
+    const hoursRemaining = Math.max(1, Math.round((youtubeDailyLimitPausedUntil - Date.now()) / (3600 * 1000)));
+    console.log(`[Cron] ⏸️ YouTube automatic upload is paused due to Google daily channel upload quota limit. Will resume in ~${hoursRemaining}h.`);
+    return;
+  }
+
   console.log('[Cron] 🔍 Checking for ready-to-upload stories...');
   try {
     const ready = pipeline.findReadyToUpload();
@@ -1892,6 +1902,23 @@ cron.schedule('0 * * * *', async () => {
         } else {
           const errReason = uploadRes?.results?.en?.error || uploadRes?.results?.ta?.error || 'Unknown upload failure';
           console.error(`[Cron] ❌ Upload failed for ${storyId}: ${errReason}`);
+
+          const isDailyQuotaLimit = typeof errReason === 'string' && (
+            errReason.includes('exceeded the number of videos') ||
+            errReason.includes('uploadLimitExceeded') ||
+            errReason.includes('quotaExceeded')
+          );
+
+          if (isDailyQuotaLimit) {
+            youtubeDailyLimitPausedUntil = Date.now() + 24 * 60 * 60 * 1000;
+            console.warn(`[Cron] 🛑 YouTube Daily Upload Limit hit. Pausing automatic uploads for 24 hours to prevent spamming.`);
+            await db.upsertStory({
+              story_id: storyId,
+              status: 'awaiting_approval',
+              error_message: 'YouTube Daily Upload Limit Reached (Google 24-hour channel limit). Will auto-retry once quota resets.'
+            });
+            break; // Stop trying remaining stories in this hourly cycle
+          }
         }
       } catch (e) {
         console.error(`[Cron] Upload failed for ${storyId}:`, e.message);

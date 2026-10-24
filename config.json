@@ -39,6 +39,11 @@
     "assetsDir": "./assets/bgm",
     "autoDownload": true
   },
+  "sfx": {
+    "enabled": true,
+    "volume": 0.12,
+    "assetsDir": "./assets/sfx"
+  },
   "naming": {
     "defaultPattern": "frame_{index:04d}.png",
     "defaultScene": 1,

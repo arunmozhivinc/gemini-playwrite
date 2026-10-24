@@ -701,7 +701,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function deleteStory(storyId, title, btnElement) {
-    const confirmed = confirm(`⚠️ Are you sure you want to permanently delete this story folder?\n\n"${title}"\n(${storyId})\n\nThis will delete all scene images, narration audios, assembled MP4 videos, and remove the database records. This cannot be undone.`);
+    const confirmed = confirm(`⚠️ Are you sure you want to delete this story?\n\n"${title}"\n(${storyId})\n\nThis will remove all generated scene images, audios, and MP4 videos from disk to free up storage.\n\nThe story record will be archived in the database with is_deleted=true so this topic and plotline will NEVER be accidentally duplicated in future videos.`);
     if (!confirmed) return;
 
     if (btnElement) {

@@ -227,6 +227,40 @@ function formatAssTime(seconds) {
   return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}.${String(cs).padStart(2, "0")}`;
 }
 
+function buildKaraokeAssText(text, durationSec, maxCharsPerLine = 26) {
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return '';
+
+  const totalChars = words.reduce((acc, w) => acc + w.length, 0);
+  const netDurationCs = Math.max(80, Math.round((durationSec - 0.3) * 100)); // centiseconds for narration
+
+  const lines = [];
+  let currentLine = [];
+  let currentLen = 0;
+
+  for (const word of words) {
+    if (currentLen + word.length + (currentLine.length ? 1 : 0) > maxCharsPerLine) {
+      if (currentLine.length) lines.push(currentLine);
+      currentLine = [word];
+      currentLen = word.length;
+    } else {
+      currentLine.push(word);
+      currentLen += word.length + (currentLine.length > 1 ? 1 : 0);
+    }
+  }
+  if (currentLine.length) lines.push(currentLine);
+
+  const karaokeLines = lines.map(lineWords => {
+    return lineWords.map(word => {
+      const weight = word.length / totalChars;
+      const cs = Math.max(12, Math.round(netDurationCs * weight));
+      return `{\\kf${cs}}${word}`;
+    }).join(' ');
+  });
+
+  return karaokeLines.join('\\N');
+}
+
 async function generateAssFile(assPath, text, durationSec, options = {}) {
   const defaultFont =
     process.platform === "win32" ? "Nirmala UI" : "Noto Sans Tamil";
@@ -234,27 +268,32 @@ async function generateAssFile(assPath, text, durationSec, options = {}) {
   // Enforced Portrait (9:16 - 1080x1920) for YouTube Shorts
   const playResX = 1080;
   const playResY = 1920;
-  const fontSize = options.fontSize || 58;
-  const marginV = options.marginV || 380; // Elevated safe zone above YouTube Shorts controls
-  const maxChars = 28; // Optimal line wrap for mobile portrait
-  const wrappedText = wrapSubtitleText(text, maxChars);
+  const fontSize = options.fontSize || 62;
+  const marginV = options.marginV || 420; // Safe zone: 420px above bottom to avoid Shorts UI controls
+  const maxChars = 26; // Optimal line wrap for mobile portrait
+  const karaokeText = buildKaraokeAssText(text, durationSec, maxChars);
 
-  const startFormatted = formatAssTime(0.2);
-  const endFormatted = formatAssTime(Math.max(0.5, durationSec - 0.2));
+  const startFormatted = formatAssTime(0.15);
+  const endFormatted = formatAssTime(Math.max(0.5, durationSec - 0.1));
 
+  // PrimaryColour: bright radiant yellow (&H0000FFFF) when active/highlighted
+  // SecondaryColour: crisp white (&H00FFFFFF) before highlighted
+  // OutlineColour: midnight black (&H00000000) 5px stroke
+  // BackColour: semi-transparent drop shadow (&HA0000000)
   const assContent = `[Script Info]
 ScriptType: v4.00+
 PlayResX: ${playResX}
 PlayResY: ${playResY}
+ScaledBorderAndShadow: yes
 WrapStyle: 0
 
 [V4+ Styles]
-Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,${fontName},${fontSize},&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3,2,2,60,60,${marginV},1
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,${fontName},${fontSize},&H0000FFFF,&H00FFFFFF,&H00000000,&HA0000000,-1,0,0,0,100,100,0,0,1,5,3,2,60,60,${marginV},1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 0,${startFormatted},${endFormatted},Default,,0,0,0,,${wrappedText}
+Dialogue: 0,${startFormatted},${endFormatted},Default,,0,0,0,,${karaokeText}
 `;
 
   await fs.writeFile(assPath, assContent, "utf8");
@@ -349,14 +388,29 @@ async function renderStoryVideo(storyData, jobDir) {
       assFilter = `,ass='${escapedAss}'`;
     }
 
-    // 5. Video filter chain
+    // 5. Video filter chain (5-Way Dynamic Camera Choreography)
     let vf = "";
     if (kenBurns) {
       const zoomStep = ((zoomMax - 1.0) / totalFrames).toFixed(6);
-      if (sceneNum % 2 === 1) {
-        vf = `scale=${width * 2}:${height * 2}:force_original_aspect_ratio=increase,crop=${width * 2}:${height * 2},zoompan=z='min(zoom+${zoomStep},${zoomMax})':d=${totalFrames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=${width}x${height}:fps=${fps}${assFilter}`;
-      } else {
-        vf = `scale=${width * 2}:${height * 2}:force_original_aspect_ratio=increase,crop=${width * 2}:${height * 2},zoompan=z='max(${zoomMax}-${zoomStep}*on,1.0)':d=${totalFrames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=${width}x${height}:fps=${fps}${assFilter}`;
+      const motionMode = (sceneNum - 1) % 5;
+
+      switch (motionMode) {
+        case 0: // Push-in focus (Hook & Key beats)
+          vf = `scale=${width * 2}:${height * 2}:force_original_aspect_ratio=increase,crop=${width * 2}:${height * 2},zoompan=z='min(zoom+${zoomStep},${zoomMax})':d=${totalFrames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=${width}x${height}:fps=${fps}${assFilter}`;
+          break;
+        case 1: // Pan Right (Exploring the world)
+          vf = `scale=${width * 2}:${height * 2}:force_original_aspect_ratio=increase,crop=${width * 2}:${height * 2},zoompan=z='${zoomMax}':d=${totalFrames}:x='(iw-iw/zoom)*(on/${totalFrames})':y='ih/2-(ih/zoom/2)':s=${width}x${height}:fps=${fps}${assFilter}`;
+          break;
+        case 2: // Tilt Up (Wonder & Sky discovery)
+          vf = `scale=${width * 2}:${height * 2}:force_original_aspect_ratio=increase,crop=${width * 2}:${height * 2},zoompan=z='${zoomMax}':d=${totalFrames}:x='iw/2-(iw/zoom/2)':y='(ih-ih/zoom)*(1-(on/${totalFrames}))':s=${width}x${height}:fps=${fps}${assFilter}`;
+          break;
+        case 3: // Pan Left (Playful movement)
+          vf = `scale=${width * 2}:${height * 2}:force_original_aspect_ratio=increase,crop=${width * 2}:${height * 2},zoompan=z='${zoomMax}':d=${totalFrames}:x='(iw-iw/zoom)*(1-(on/${totalFrames}))':y='ih/2-(ih/zoom/2)':s=${width}x${height}:fps=${fps}${assFilter}`;
+          break;
+        case 4: // Pull-back Reveal (Grand view & Celebration)
+        default:
+          vf = `scale=${width * 2}:${height * 2}:force_original_aspect_ratio=increase,crop=${width * 2}:${height * 2},zoompan=z='max(${zoomMax}-${zoomStep}*on,1.0)':d=${totalFrames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=${width}x${height}:fps=${fps}${assFilter}`;
+          break;
       }
     } else {
       vf = `scale=${width}:${height}:force_original_aspect_ratio=increase,crop=${width}:${height}${assFilter}`;
@@ -389,15 +443,46 @@ async function renderStoryVideo(storyData, jobDir) {
     .join("\n");
   await fs.writeFile(concatListFile, fileLines, "utf8");
 
-  const finalVideo = path.join(jobDir, outputFilename);
+  const concatVideo = path.join(jobDir, `concat_${outputFilename}`);
   await runFFmpeg([
     "-nostdin", "-y",
     "-f", "concat", "-safe", "0",
     "-i", concatListFile,
     "-c", "copy",
     "-movflags", "+faststart",
-    finalVideo,
+    concatVideo,
   ]);
+
+  // 8. Continuous Master BGM Layer (Uninterrupted musical bed across entire video)
+  const finalVideo = path.join(jobDir, outputFilename);
+  let bgmLocalPath = path.join(jobDir, "master_bgm.mp3");
+  let hasBgm = false;
+  if (storyData.bgm_url) {
+    hasBgm = await downloadAsset(storyData.bgm_url, bgmLocalPath);
+  }
+
+  if (hasBgm) {
+    console.log(`[Story Render] 🎵 Laying continuous uninterrupted BGM layer under entire video...`);
+    const totalDur = await getAudioDuration(concatVideo);
+    const fadeOutStart = Math.max(0.5, totalDur - 1.5).toFixed(2);
+    const bgmVol = Number(storyData.bgm_volume || 0.08);
+
+    await runFFmpeg([
+      "-nostdin", "-y",
+      "-i", concatVideo,
+      "-stream_loop", "-1", "-i", bgmLocalPath,
+      "-filter_complex",
+      `[1:a]volume=${bgmVol},afade=t=in:st=0:d=1.0,afade=t=out:st=${fadeOutStart}:d=1.5[bgm];[0:a][bgm]amix=inputs=2:duration=first:dropout_transition=1[aout]`,
+      "-map", "0:v",
+      "-map", "[aout]",
+      "-c:v", "copy",
+      "-c:a", "aac", "-b:a", "192k",
+      "-movflags", "+faststart",
+      finalVideo,
+    ]);
+  } else {
+    await fs.rename(concatVideo, finalVideo);
+  }
 
   return {
     finalVideoPath: finalVideo,
