@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Antigravity Kids Studio — AI Video Production & Publishing Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="css/style.css?v=5">
 </head>
+
 <body>
   <!-- Ambient Background Glows -->
   <div class="ambient-glow glow-1"></div>
@@ -21,7 +25,7 @@
       <div class="brand">
         <div class="logo-icon">🎬</div>
         <div class="brand-text">
-          <h1>Antigravity Kids Studio</h1>
+          <h1>Antigravity Video Studio</h1>
           <p class="subtitle">AI YouTube Shorts Production & Publishing Dashboard</p>
         </div>
       </div>
@@ -104,7 +108,8 @@
             <span style="font-size: 1.25rem;">⚡</span>
             <div>
               <h3 style="font-size: 1.05rem; font-weight: 600; color: #fff;">Activity Center</h3>
-              <p style="font-size: 0.74rem; color: var(--text-muted);">Real-time workflow execution & upcoming scheduled triggers</p>
+              <p style="font-size: 0.74rem; color: var(--text-muted);">Real-time workflow execution & upcoming scheduled
+                triggers</p>
             </div>
           </div>
           <span id="activity-beacon" class="activity-status-beacon beacon-idle">
@@ -116,7 +121,8 @@
         <!-- Section A: Happening NOW -->
         <div style="margin-top: 10px;">
           <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-cyan); font-weight: 600;">
+            <span
+              style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-cyan); font-weight: 600;">
               🔴 Happening NOW
             </span>
             <span id="activity-elapsed-badge" class="badge-tag mono-font" style="font-size: 0.7rem; display: none;">
@@ -154,11 +160,13 @@
           </div>
 
           <!-- Current Stage Status Message -->
-          <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-sm); padding: 10px 14px; margin-top: 10px;">
+          <div
+            style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-sm); padding: 10px 14px; margin-top: 10px;">
             <div id="activity-current-label" style="font-size: 0.86rem; color: #e2e8f0; font-weight: 500;">
               System Standby — Waiting for trigger or schedule
             </div>
-            <div id="activity-detail-msg" style="font-size: 0.74rem; color: var(--text-muted); margin-top: 3px; font-family: var(--font-mono);">
+            <div id="activity-detail-msg"
+              style="font-size: 0.74rem; color: var(--text-muted); margin-top: 3px; font-family: var(--font-mono);">
               Last completed: Little Anbu and the Animal Babies (All 6 scenes rendered)
             </div>
           </div>
@@ -181,20 +189,25 @@
 
         <!-- Master Trigger Button -->
         <div style="margin-top: 18px; display: flex; gap: 10px; align-items: center;">
-          <button type="button" id="btn-master-run-pipeline" class="btn btn-primary pulse-btn" style="flex: 1; padding: 12px 20px; font-size: 0.95rem; font-weight: 600;">
+          <button type="button" id="btn-master-run-pipeline" class="btn btn-primary pulse-btn"
+            style="flex: 1; padding: 12px 20px; font-size: 0.95rem; font-weight: 600;">
             🚀 Run Full Pipeline Now
           </button>
-          <button type="button" id="btn-toggle-custom-topic" class="btn btn-outline" style="font-size: 0.8rem; padding: 12px 14px;" title="Specify custom topic">
+          <button type="button" id="btn-toggle-custom-topic" class="btn btn-outline"
+            style="font-size: 0.8rem; padding: 12px 14px;" title="Specify custom topic">
             ✏️ Custom Topic
           </button>
         </div>
 
         <!-- Custom Topic Input Drawer (collapsible) -->
-        <div id="custom-topic-drawer" style="display: none; margin-top: 12px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+        <div id="custom-topic-drawer"
+          style="display: none; margin-top: 12px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
           <label class="form-label" style="margin-bottom: 6px;">Specify Custom Story Topic (optional):</label>
           <div style="display: flex; gap: 8px;">
-            <input type="text" id="input-custom-topic" class="form-input" placeholder="e.g. A kind puppy sharing food with a shivering bird in rain" style="flex: 1;">
-            <button type="button" id="btn-submit-custom-pipeline" class="btn btn-secondary" style="white-space: nowrap;">
+            <input type="text" id="input-custom-topic" class="form-input"
+              placeholder="e.g. A kind puppy sharing food with a shivering bird in rain" style="flex: 1;">
+            <button type="button" id="btn-submit-custom-pipeline" class="btn btn-secondary"
+              style="white-space: nowrap;">
               ▶️ Run
             </button>
           </div>
@@ -208,7 +221,8 @@
             <span style="font-size: 1.25rem;">⏰</span>
             <div>
               <h3 style="font-size: 1.05rem; font-weight: 600; color: #fff;">Schedule Automation</h3>
-              <p style="font-size: 0.74rem; color: var(--text-muted);">Change pipeline execution frequency on the fly</p>
+              <p style="font-size: 0.74rem; color: var(--text-muted);">Change pipeline execution frequency on the fly
+              </p>
             </div>
           </div>
           <label class="toggle-control" style="font-size: 0.75rem;">
@@ -219,15 +233,19 @@
         </div>
 
         <div style="margin-bottom: 12px;">
-          <span style="font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Active Schedule</span>
+          <span
+            style="font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Active
+            Schedule</span>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-            <span id="active-schedule-label" style="font-size: 1.1rem; font-weight: 700; color: var(--accent-cyan);">Every 1 Hour</span>
+            <span id="active-schedule-label"
+              style="font-size: 1.1rem; font-weight: 700; color: var(--accent-cyan);">Every 1 Hour</span>
             <span id="active-schedule-cron" class="badge-tag mono-font">0 * * * *</span>
           </div>
         </div>
 
         <!-- Quick Preset Buttons -->
-        <label class="form-label" style="font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 6px;">
+        <label class="form-label"
+          style="font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 6px;">
           Select Frequency Preset:
         </label>
         <div class="schedule-presets">
@@ -254,13 +272,15 @@
         <!-- Custom Cron Input (visible when custom selected) -->
         <div id="custom-cron-box" style="display: none; margin-top: 10px;">
           <label class="form-label">Custom 5-Field Cron Expression:</label>
-          <input type="text" id="input-custom-cron" class="form-input mono-font" value="0 * * * *" placeholder="e.g. 0 */3 * * *">
+          <input type="text" id="input-custom-cron" class="form-input mono-font" value="0 * * * *"
+            placeholder="e.g. 0 */3 * * *">
           <span class="form-hint">Format: minute hour day month day-of-week (Asia/Kolkata timezone)</span>
         </div>
 
         <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center;">
           <span id="schedule-feedback" style="font-size: 0.76rem; color: #34d399;"></span>
-          <button type="button" id="btn-save-schedule" class="btn btn-secondary" style="font-size: 0.82rem; padding: 8px 16px;">
+          <button type="button" id="btn-save-schedule" class="btn btn-secondary"
+            style="font-size: 0.82rem; padding: 8px 16px;">
             💾 Save & Apply Schedule
           </button>
         </div>
@@ -274,16 +294,21 @@
           <span style="font-size: 1.4rem;">🎬</span>
           <div>
             <h2 style="font-size: 1.25rem; font-weight: 700; color: #fff;">Stories & Final Videos Gallery</h2>
-            <p style="font-size: 0.78rem; color: var(--text-muted);">Browse all generated stories, watch subtitled 9:16 Shorts, and track YouTube publication status</p>
+            <p style="font-size: 0.78rem; color: var(--text-muted);">Browse all generated stories, watch subtitled 9:16
+              Shorts, and track YouTube publication status</p>
           </div>
         </div>
 
         <!-- Filter Tabs -->
         <div class="gallery-filter-tabs">
-          <button type="button" class="gallery-tab active" data-filter="all">All Stories (<span id="count-filter-all">0</span>)</button>
-          <button type="button" class="gallery-tab" data-filter="ready">🎬 Videos Ready (<span id="count-filter-ready">0</span>)</button>
-          <button type="button" class="gallery-tab" data-filter="pending">⏳ Awaiting Approval (<span id="count-filter-pending">0</span>)</button>
-          <button type="button" class="gallery-tab" data-filter="uploaded">✅ Uploaded to YouTube (<span id="count-filter-uploaded">0</span>)</button>
+          <button type="button" class="gallery-tab active" data-filter="all">All Stories (<span
+              id="count-filter-all">0</span>)</button>
+          <button type="button" class="gallery-tab" data-filter="ready">🎬 Videos Ready (<span
+              id="count-filter-ready">0</span>)</button>
+          <button type="button" class="gallery-tab" data-filter="pending">⏳ Awaiting Approval (<span
+              id="count-filter-pending">0</span>)</button>
+          <button type="button" class="gallery-tab" data-filter="uploaded">✅ Uploaded to YouTube (<span
+              id="count-filter-uploaded">0</span>)</button>
         </div>
       </div>
 
@@ -303,7 +328,8 @@
           <div class="card-title-group">
             <span class="card-icon">📟</span>
             <h2 class="card-title" style="font-size: 1rem;">Live Background Pipeline Activity</h2>
-            <span id="log-stream-badge" class="status-badge" style="background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.35); color: #10b981; font-size: 0.72rem; padding: 2px 8px;">
+            <span id="log-stream-badge" class="status-badge"
+              style="background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.35); color: #10b981; font-size: 0.72rem; padding: 2px 8px;">
               <span class="status-dot" style="background: #10b981;"></span> Live SSE Stream
             </span>
           </div>
@@ -314,7 +340,8 @@
           </div>
         </div>
         <!-- Terminal Output Box -->
-        <div id="live-console" style="background: #060910; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-sm); padding: 12px 14px; height: 160px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.6; color: #cbd5e1;">
+        <div id="live-console"
+          style="background: #060910; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-sm); padding: 12px 14px; height: 160px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.6; color: #cbd5e1;">
           <div style="color: #64748b;">[System] Listening for real-time background pipeline events...</div>
         </div>
       </div>
@@ -326,10 +353,14 @@
     <div class="video-player-container">
       <div class="video-player-header">
         <div>
-          <h4 id="video-player-title" style="font-size: 0.95rem; font-weight: 600; color: #fff;">Story Video Preview</h4>
-          <span id="video-player-subtitle" style="font-size: 0.74rem; color: var(--accent-cyan); font-family: var(--font-mono);">9:16 Vertical Short with Subtitles</span>
+          <h4 id="video-player-title" style="font-size: 0.95rem; font-weight: 600; color: #fff;">Story Video Preview
+          </h4>
+          <span id="video-player-subtitle"
+            style="font-size: 0.74rem; color: var(--accent-cyan); font-family: var(--font-mono);">9:16 Vertical Short
+            with Subtitles</span>
         </div>
-        <button type="button" id="video-player-close" class="modal-close-btn" style="position: static; font-size: 1.4rem;">&times;</button>
+        <button type="button" id="video-player-close" class="modal-close-btn"
+          style="position: static; font-size: 1.4rem;">&times;</button>
       </div>
 
       <div class="video-frame-box">
@@ -339,10 +370,13 @@
         </video>
       </div>
 
-      <div style="padding: 12px 18px; background: rgba(255,255,255,0.03); display: flex; justify-content: space-between; align-items: center;">
+      <div
+        style="padding: 12px 18px; background: rgba(255,255,255,0.03); display: flex; justify-content: space-between; align-items: center;">
         <div style="display: flex; gap: 8px;">
-          <button type="button" id="btn-modal-switch-en" class="btn-sm btn-primary" style="font-size: 0.72rem;">English Video</button>
-          <button type="button" id="btn-modal-switch-ta" class="btn-sm btn-outline" style="font-size: 0.72rem;">Tamil Video</button>
+          <button type="button" id="btn-modal-switch-en" class="btn-sm btn-primary" style="font-size: 0.72rem;">English
+            Video</button>
+          <button type="button" id="btn-modal-switch-ta" class="btn-sm btn-outline" style="font-size: 0.72rem;">Tamil
+            Video</button>
         </div>
         <a id="btn-modal-download-video" href="#" download class="btn-sm btn-outline" style="font-size: 0.72rem;">
           ⬇️ Download MP4
@@ -353,25 +387,32 @@
 
   <!-- PostgreSQL Database Records Modal -->
   <div id="db-modal" class="modal-backdrop">
-    <div class="modal-content glass-card" style="max-width: 1100px; max-height: 88vh; display: flex; flex-direction: column; width: 92%;">
-      <div class="card-header" style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+    <div class="modal-content glass-card"
+      style="max-width: 1100px; max-height: 88vh; display: flex; flex-direction: column; width: 92%;">
+      <div class="card-header"
+        style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
         <div class="card-title-group">
           <span class="card-icon">🗄️</span>
           <h2 class="card-title">PostgreSQL Database Records</h2>
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
-          <button type="button" id="btn-db-tab-stories" class="btn-sm btn-primary" style="font-size:0.75rem;">📖 Stories Schema</button>
-          <button type="button" id="btn-db-tab-uploads" class="btn-sm btn-outline" style="font-size:0.75rem;">📤 Uploads History</button>
+          <button type="button" id="btn-db-tab-stories" class="btn-sm btn-primary" style="font-size:0.75rem;">📖 Stories
+            Schema</button>
+          <button type="button" id="btn-db-tab-uploads" class="btn-sm btn-outline" style="font-size:0.75rem;">📤 Uploads
+            History</button>
           <button type="button" id="btn-refresh-db-uploads" class="btn-sm btn-outline">🔄 Refresh</button>
-          <button type="button" id="db-modal-close" class="modal-close-btn" style="position: static; margin-left: 10px;">&times;</button>
+          <button type="button" id="db-modal-close" class="modal-close-btn"
+            style="position: static; margin-left: 10px;">&times;</button>
         </div>
       </div>
 
       <!-- View 1: Stories Table (Exact User Schema) -->
       <div id="db-stories-view" style="flex: 1; overflow-y: auto; max-height: 65vh;">
-        <table style="width: 100%; border-collapse: collapse; font-size: 0.78rem; font-family: var(--font-mono); text-align: left;">
+        <table
+          style="width: 100%; border-collapse: collapse; font-size: 0.78rem; font-family: var(--font-mono); text-align: left;">
           <thead>
-            <tr style="border-bottom: 1px solid rgba(255,255,255,0.15); color: var(--accent-cyan); background: rgba(0,0,0,0.3);">
+            <tr
+              style="border-bottom: 1px solid rgba(255,255,255,0.15); color: var(--accent-cyan); background: rgba(0,0,0,0.3);">
               <th style="padding: 10px 8px;">Story ID</th>
               <th style="padding: 10px 8px;">Title (EN / TA)</th>
               <th style="padding: 10px 8px;">Theme & Moral</th>
@@ -383,16 +424,21 @@
             </tr>
           </thead>
           <tbody id="db-stories-tbody">
-            <tr><td colspan="8" style="padding: 20px; text-align: center; color: #64748b;">Loading stories from PostgreSQL...</td></tr>
+            <tr>
+              <td colspan="8" style="padding: 20px; text-align: center; color: #64748b;">Loading stories from
+                PostgreSQL...</td>
+            </tr>
           </tbody>
         </table>
       </div>
 
       <!-- View 2: Uploads Table -->
       <div id="db-uploads-view" style="flex: 1; overflow-y: auto; max-height: 65vh; display: none;">
-        <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; font-family: var(--font-mono); text-align: left;">
+        <table
+          style="width: 100%; border-collapse: collapse; font-size: 0.8rem; font-family: var(--font-mono); text-align: left;">
           <thead>
-            <tr style="border-bottom: 1px solid rgba(255,255,255,0.15); color: var(--accent-cyan); background: rgba(0,0,0,0.3);">
+            <tr
+              style="border-bottom: 1px solid rgba(255,255,255,0.15); color: var(--accent-cyan); background: rgba(0,0,0,0.3);">
               <th style="padding: 10px 8px;">Story ID</th>
               <th style="padding: 10px 8px;">File Name</th>
               <th style="padding: 10px 8px;">Target</th>
@@ -403,7 +449,10 @@
             </tr>
           </thead>
           <tbody id="db-uploads-tbody">
-            <tr><td colspan="7" style="padding: 20px; text-align: center; color: #64748b;">Loading uploads from PostgreSQL...</td></tr>
+            <tr>
+              <td colspan="7" style="padding: 20px; text-align: center; color: #64748b;">Loading uploads from
+                PostgreSQL...</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -412,4 +461,5 @@
 
   <script src="js/app.js?v=6"></script>
 </body>
+
 </html>
